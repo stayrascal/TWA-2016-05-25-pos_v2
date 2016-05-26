@@ -5,10 +5,10 @@ function findItemByBarcode(items, barcode) {
 }
 
 function generateBarcodeInfo(barcode, quantity) {
-    return Object.assign({
+    return {
         barcode: barcode,
         quantity: quantity
-    });
+    };
 }
 
 function parse(inputs, format) {
@@ -62,10 +62,10 @@ var promotionStrategy = {
                 item.savingCost = item.freeQuantity * item.price;
             }
         });
-    },
+    }
 };
 
-function discountItems(items, promotions) {
+function applyPromotionsOnCartItems(items, promotions) {
     promotions.forEach(promotion => {
         items.forEach(item => {
             promotionStrategy[promotion.type](promotion, item);
@@ -140,7 +140,7 @@ function buildFooterMessage(costInfo, decimalDigits) {
     return expectText
 }
 
-function printReciptMessage(items, freeItems, costInfo, decimalDigits = 2) {
+function printReceiptMessage(items, freeItems, costInfo, decimalDigits = 2) {
     var expectText = buildHeadMessage();
     expectText += buildCartItemsMessage(items, decimalDigits);
     expectText += buildFreeCartItemMessage(freeItems);
@@ -153,13 +153,14 @@ function printInventory(inputs) {
     var promotions = loadPromotions();
 
     var barcodesInfo = parseBarcodesInfo(inputs, '-');
-    var basicartItems = generateBasicCartItems(allItems, barcodesInfo);
+    var basicCartItems = generateBasicCartItems(allItems, barcodesInfo);
 
-    var cartItemsWithSubtotal = calculateSubtotal(basicartItems);
-    discountItems(cartItemsWithSubtotal, promotions);
+    var cartItemsWithSubtotal = calculateSubtotal(basicCartItems);
+
+    applyPromotionsOnCartItems(cartItemsWithSubtotal, promotions);
 
     var costInfo = calculateCostInfo(cartItemsWithSubtotal);
     var freeItems = getFreeItems(cartItemsWithSubtotal);
     var cartItemsWithActualSubTotal = calculateActualSubTotal(cartItemsWithSubtotal);
-    printReciptMessage(cartItemsWithActualSubTotal, freeItems, costInfo);
+    printReceiptMessage(cartItemsWithActualSubTotal, freeItems, costInfo);
 }
