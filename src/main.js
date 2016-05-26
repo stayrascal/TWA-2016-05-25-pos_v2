@@ -4,19 +4,12 @@ function findItemByBarcode(items, barcode) {
     });
 }
 
-function generateItemWithBarcodeAndQuantity(barcode, quantity) {
-    return {
-        barcode: barcode,
-        quantity: quantity
-    };
-}
-
 function parse(inputs, format) {
     var result = [];
     inputs.forEach(input => {
         var barcode = input.split(format)[0];
         var quantity = input.split(format)[1] || 1;
-        result.push(generateItemWithBarcodeAndQuantity(barcode, quantity))
+        result.push({barcode: barcode, quantity: quantity})
     });
     return result;
 }
