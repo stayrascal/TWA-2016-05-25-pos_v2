@@ -56,19 +56,44 @@ describe('pos', function () {
     it('should return item when find item in item list', function(){
         var barcode = 'ITEM000001';
 
-        var expectItem = findItemByBarcode(allItems, barcode);
+        var returnItem = findItemByBarcode(allItems, barcode);
 
-        expect(expectItem.barcode).toBe(barcode);
+        expect(returnItem.barcode).toEqual(barcode);
     });
 
     it('should return item list with barcode and quantity', function(){
-        var expectItems = parse(inputs, '-');
+        var returnItem = parse(inputs, '-');
 
-        expect(expectItems.length).toBe(inputs.length);
-        expect(expectItems[0].barcode).toBe(inputs[0]);
-        expect(expectItems[0].quantity).toBe(1);
-        expect(expectItems[5].quantity).toBe(2);
+        expect(returnItem.length).toEqual(inputs.length);
+        expect(returnItem[0].barcode).toEqual(inputs[0]);
+        expect(returnItem[0].quantity).toEqual(1);
+        expect(returnItem[5].quantity).toEqual(2);
     });
 
+    it('should merge item list and add the quantity', function(){
+        var expectFirstItem = {
+            barcode:'ITEM000001',
+            quantity: 5
+        };
+        var returnItems = generateItems(inputs, '-');
 
+        expect(returnItems.length).toEqual(3);
+        expect(returnItems[0]).toEqual(expectFirstItem);
+    });
+
+    it('should return item list and the item have name property', function(){
+        var mergeItems = generateItems(inputs, '-');
+        var expectFirstItem = {
+            barcode:'ITEM000001',
+            name: '雪碧',
+            unit: '瓶',
+            price: 3,
+            quantity: 5
+        };
+
+        var returnItems = generateBasicItems(allItems, mergeItems);
+
+        expect(returnItems.length).toEqual(3);
+        expect(returnItems[0]).toEqual(expectFirstItem);
+    });
 });
