@@ -1,23 +1,35 @@
 function findItemByBarcode(items, barcode) {
-    return items.find(function(item) {
+    return items.find(item => {
         return item.barcode === barcode;
     });
 }
 
-function parseBarcodes(inputs, format) {
+function generateBarcodeInfo(barcode, quantity) {
+    return Object.assign({
+        barcode: barcode,
+        quantity: quantity
+    });
+}
+
+function parseInputs(inputs, format){
     var result = [];
     inputs.forEach(input => {
         var barcode = input.split(format)[0];
         var quantity = input.split(format)[1] || 1;
-        var existBarcodeInfo = findItemByBarcode(result, barcode);
-        if (!existBarcodeInfo) {
-            existBarcodeInfo = Object.assign({
-                barcode: barcode,
-                quantity: quantity
-            });
-            result.push(existBarcodeInfo);
-        } else {
-            existBarcodeInfo.quantity += quantity;
+        result.push(generateBarcodeInfo(barcode, quantity))
+    });
+    return result;
+}
+
+function parseBarcodes(inputs, format) {
+    var result = [];
+    var barcodesInfo = parseInputs(inputs, format);
+    barcodesInfo.forEach(barcodeInfo => {
+        var existBarcodeInfo = findItemByBarcode(result, barcodeInfo.barcode);
+        if (existBarcodeInfo){
+            existBarcodeInfo.quantity += barcodeInfo.quantity;
+        }else {
+            result.push(barcodeInfo);
         }
     });
     return result;
@@ -63,17 +75,13 @@ function discountItems(items, promotions) {
 }
 
 function calculateCostInfo(items) {
-    var result = {};
-    var totalPrice = 0.0;
-    var totalSavingCost = 0.0;
+    var resultObj = {totalPrice: 0.0, totalSavingCost: 0.0, totalPriceAfterPromotion: 0.0};
     items.forEach(item => {
-        totalPrice += item.subTotal;
-        totalSavingCost += item.savingCost;
+        resultObj.totalPrice += item.subTotal;
+        resultObj.totalSavingCost += item.savingCost;
     });
-    result['totalPrice'] = totalPrice;
-    result['totalSavingCost'] = totalSavingCost;
-    result['totalPriceAfterPromotion'] = totalPrice - totalSavingCost;
-    return result;
+    resultObj.totalPriceAfterPromotion = resultObj.totalPrice - resultObj.totalSavingCost;
+    return resultObj;
 }
 
 function calculateActualSubTotal(items) {
@@ -91,7 +99,7 @@ function getFreeItems(cartItems) {
 }
 
 function getNowDateMessage() {
-    var dateDigitToString = function(num) {
+    var dateDigitToString = function (num) {
         return num < 10 ? '0' + num : num;
     };
 
@@ -109,15 +117,21 @@ function printMessage(items, freeItems, costInfo, decimalDigits = 2) {
     var expectText = '***<没钱赚商店>购物清单***\n';
     expectText += `打印时间：${getNowDateMessage()}\n`;
     expectText += '----------------------\n';
+
     items.forEach(item => expectText += `名称：${item.name}，数量：${item.quantity}${item.unit}，单价：${item.price.toFixed(decimalDigits)}(元)，小计：${item.actualSubTotal.toFixed(decimalDigits)}(元)\n`);
+
     expectText += '----------------------\n';
+
     if (freeItems.length > 0) {
         expectText += '挥泪赠送商品：\n';
         freeItems.forEach(item => expectText += `名称：${item.name}，数量：${item.freeQuantity}${item.unit}\n`);
     }
+
     expectText += '----------------------\n';
+
     expectText += `总计：${costInfo.totalPriceAfterPromotion.toFixed(decimalDigits)}(元)\n`;
     expectText += `节省：${costInfo.totalSavingCost.toFixed(decimalDigits)}(元)\n`;
+
     expectText += '**********************';
     console.log(expectText);
 }
