@@ -54,22 +54,21 @@ function calculateSubtotal(items) {
     })
 }
 
-function discountItemByPromotion(item, promotion) {
-    if (promotion.type === 'BUY_TWO_GET_ONE_FREE') {
+var promotionStrategy = {
+    'BUY_TWO_GET_ONE_FREE': function (promotion, item) {
         promotion.barcodes.forEach(barcode => {
             if (barcode === item.barcode) {
                 item.freeQuantity = parseInt(item.quantity / 3);
                 item.savingCost = item.freeQuantity * item.price;
             }
         });
-    }
-}
+    },
+};
 
 function discountItems(items, promotions) {
     promotions.forEach(promotion => {
         items.forEach(item => {
-            //promotion.apply(item);
-            discountItemByPromotion(item, promotion);
+            promotionStrategy[promotion.type](promotion, item);
         });
     });
 }
@@ -125,9 +124,9 @@ function buildCartItemsMessage(items, decimalDigits) {
 
 
 function buildFreeCartItemMessage(freeItems) {
-    var expectText = '----------------------\n';
+    var expectText = '';
     if (freeItems.length > 0) {
-        expectText += '挥泪赠送商品：\n';
+        expectText += '----------------------\n挥泪赠送商品：\n';
         freeItems.forEach(item => expectText += `名称：${item.name}，数量：${item.freeQuantity}${item.unit}\n`);
     }
     return expectText;
@@ -150,11 +149,11 @@ function printReciptMessage(items, freeItems, costInfo, decimalDigits = 2) {
 }
 
 function printInventory(inputs) {
-    var repositoy = loadAllItems();
+    var allItems = loadAllItems();
     var promotions = loadPromotions();
 
     var barcodesInfo = parseBarcodesInfo(inputs, '-');
-    var basicartItems = generateBasicCartItems(repositoy, barcodesInfo);
+    var basicartItems = generateBasicCartItems(allItems, barcodesInfo);
 
     var cartItemsWithSubtotal = calculateSubtotal(basicartItems);
     discountItems(cartItemsWithSubtotal, promotions);
