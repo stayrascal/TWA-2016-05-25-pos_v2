@@ -52,4 +52,23 @@ describe('pos', function () {
 
         expect(console.log).toHaveBeenCalledWith(expectText);
     });
+
+    it('should return item when find item in item list', function(){
+        var barcode = 'ITEM000001';
+
+        var expectItem = findItemByBarcode(allItems, barcode);
+
+        expect(expectItem.barcode).toBe(barcode);
+    });
+
+    it('should return item list with barcode and quantity', function(){
+        var expectItems = parse(inputs, '-');
+
+        expect(expectItems.length).toBe(inputs.length);
+        expect(expectItems[0].barcode).toBe(inputs[0]);
+        expect(expectItems[0].quantity).toBe(1);
+        expect(expectItems[5].quantity).toBe(2);
+    });
+
+
 });

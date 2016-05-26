@@ -9,7 +9,7 @@ function parse(inputs, format) {
     inputs.forEach(input => {
         var barcode = input.split(format)[0];
         var quantity = input.split(format)[1] || 1;
-        result.push({barcode: barcode, quantity: quantity})
+        result.push({barcode: barcode, quantity: parseInt(quantity)})
     });
     return result;
 }
