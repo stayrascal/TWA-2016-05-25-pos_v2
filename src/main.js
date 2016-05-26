@@ -16,8 +16,8 @@ function parse(inputs, format) {
 
 function generateItems(inputs, format) {
     var result = [];
-    var itemWithBarcodeAndQuantity = parse(inputs, format);
-    itemWithBarcodeAndQuantity.forEach(item => {
+    var itemsWithBarcodeAndQuantity = parse(inputs, format);
+    itemsWithBarcodeAndQuantity.forEach(item => {
         var existItem = findItemByBarcode(result, item.barcode);
         if (existItem) {
             existItem.quantity += item.quantity;
@@ -49,38 +49,56 @@ function calculateSubtotal(items) {
 
 var promotionStrategy = {
     'BUY_TWO_GET_ONE_FREE': function (promotion, item) {
-        //var itemCopy = Object.assign(item);
-        //promotion.barcodes.forEach(barcode => {
-        //    if (barcode === itemCopy.barcode) {
-        //        itemCopy.freeQuantity = parseInt(itemCopy.quantity / 3);
-        //        itemCopy.savingCost = itemCopy.freeQuantity * itemCopy.price;
-        //    }
-        //});
-        //return itemCopy;
+        //method A
+        /*var itemCopy = Object.assign(item);
+        promotion.barcodes.forEach(barcode => {
+            if (barcode === itemCopy.barcode) {
+                itemCopy.freeQuantity = parseInt(itemCopy.quantity / 3);
+                itemCopy.savingCost = itemCopy.freeQuantity * itemCopy.price;
+            }
+        });
+        return itemCopy;*/
 
+        // method B
         promotion.barcodes.forEach(barcode => {
             if (barcode === item.barcode) {
                 item.freeQuantity = parseInt(item.quantity / 3);
                 item.savingCost = item.freeQuantity * item.price;
             }
         });
+
+        // method C
+        /*item.freeQuantity = parseInt(item.quantity / 3);
+        item.savingCost = item.freeQuantity * item.price;*/
     }
 };
 
 function applyPromotionsOnCartItems(items, promotions) {
-    //var result = [];
-    //promotions.forEach(promotion => {
-    //    items.forEach(item => {
-    //        result.push(promotionStrategy[promotion.type](promotion, item));
-    //    });
-    //});
-    //return result;
+    //method A
+    /*var result = [];
+    promotions.forEach(promotion => {
+        items.forEach(item => {
+            result.push(promotionStrategy[promotion.type](promotion, item));
+        });
+    });
+    return result;*/
 
+    //method B
     items.map(item => {
         promotions.forEach(promotion => {
             promotionStrategy[promotion.type](promotion, item);
         });
     });
+
+    //method C
+    /*promotions.forEach(promotion => {
+        promotion.barcodes.forEach(barcode => {
+            var item = findItemByBarcode(items, barcode);
+            if (item){
+                promotionStrategy[promotion.type](promotion, item);
+            }
+        })
+    });*/
 }
 
 function calculateCostInfo(items) {
