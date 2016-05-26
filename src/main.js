@@ -32,7 +32,7 @@ function generateBasicItems(itemRepository, items) {
     var result = [];
     items.forEach(originItem => {
         var item = findItemByBarcode(itemRepository, originItem.barcode);
-        result.push(Object.assign(item, originItem));
+        result.push(Object.assign({}, item, originItem));
     });
     return result;
 }
