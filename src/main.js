@@ -4,7 +4,7 @@ function findItemByBarcode(items, barcode) {
     });
 }
 
-function generateBarcodeInfo(barcode, quantity) {
+function generateItemWithBarcodeAndQuantity(barcode, quantity) {
     return {
         barcode: barcode,
         quantity: quantity
@@ -16,30 +16,30 @@ function parse(inputs, format) {
     inputs.forEach(input => {
         var barcode = input.split(format)[0];
         var quantity = input.split(format)[1] || 1;
-        result.push(generateBarcodeInfo(barcode, quantity))
+        result.push(generateItemWithBarcodeAndQuantity(barcode, quantity))
     });
     return result;
 }
 
-function parseBarcodesInfo(inputs, format) {
+function generateItems(inputs, format) {
     var result = [];
-    var barcodesInfo = parse(inputs, format);
-    barcodesInfo.forEach(barcodeInfo => {
-        var existBarcodeInfo = findItemByBarcode(result, barcodeInfo.barcode);
-        if (existBarcodeInfo) {
-            existBarcodeInfo.quantity += barcodeInfo.quantity;
+    var itemWithBarcodeAndQuantity = parse(inputs, format);
+    itemWithBarcodeAndQuantity.forEach(item => {
+        var existItem = findItemByBarcode(result, item.barcode);
+        if (existItem) {
+            existItem.quantity += item.quantity;
         } else {
-            result.push(barcodeInfo);
+            result.push(item);
         }
     });
     return result;
 }
 
-function generateBasicCartItems(items, barcodesInfo) {
+function generateBasicItems(itemRepository, items) {
     var result = [];
-    barcodesInfo.forEach(barcodeInfo => {
-        var item = findItemByBarcode(items, barcodeInfo.barcode);
-        result.push(Object.assign(item, barcodeInfo));
+    items.forEach(originItem => {
+        var item = findItemByBarcode(itemRepository, originItem.barcode);
+        result.push(Object.assign(item, originItem));
     });
     return result;
 }
@@ -149,18 +149,19 @@ function printReceiptMessage(items, freeItems, costInfo, decimalDigits = 2) {
 }
 
 function printInventory(inputs) {
-    var allItems = loadAllItems();
+    var itemRepository = loadAllItems();
     var promotions = loadPromotions();
 
-    var barcodesInfo = parseBarcodesInfo(inputs, '-');
-    var basicCartItems = generateBasicCartItems(allItems, barcodesInfo);
+    var items = generateItems(inputs, '-');
+    var basicItems = generateBasicItems(itemRepository, items);
 
-    var cartItemsWithSubtotal = calculateSubtotal(basicCartItems);
+    var itemsWithSubtotal = calculateSubtotal(basicItems);
 
-    applyPromotionsOnCartItems(cartItemsWithSubtotal, promotions);
+    applyPromotionsOnCartItems(itemsWithSubtotal, promotions);
 
-    var costInfo = calculateCostInfo(cartItemsWithSubtotal);
-    var freeItems = getFreeItems(cartItemsWithSubtotal);
-    var cartItemsWithActualSubTotal = calculateActualSubTotal(cartItemsWithSubtotal);
-    printReceiptMessage(cartItemsWithActualSubTotal, freeItems, costInfo);
+    var costInfo = calculateCostInfo(itemsWithSubtotal);
+    var freeItems = getFreeItems(itemsWithSubtotal);
+    var itemsWithActualSubTotal = calculateActualSubTotal(itemsWithSubtotal);
+
+    printReceiptMessage(itemsWithActualSubTotal, freeItems, costInfo);
 }
