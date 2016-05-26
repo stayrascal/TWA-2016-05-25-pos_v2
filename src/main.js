@@ -11,7 +11,7 @@ function generateBarcodeInfo(barcode, quantity) {
     });
 }
 
-function parseInputs(inputs, format){
+function parse(inputs, format) {
     var result = [];
     inputs.forEach(input => {
         var barcode = input.split(format)[0];
@@ -21,21 +21,21 @@ function parseInputs(inputs, format){
     return result;
 }
 
-function parseBarcodes(inputs, format) {
+function parseBarcodesInfo(inputs, format) {
     var result = [];
-    var barcodesInfo = parseInputs(inputs, format);
+    var barcodesInfo = parse(inputs, format);
     barcodesInfo.forEach(barcodeInfo => {
         var existBarcodeInfo = findItemByBarcode(result, barcodeInfo.barcode);
-        if (existBarcodeInfo){
+        if (existBarcodeInfo) {
             existBarcodeInfo.quantity += barcodeInfo.quantity;
-        }else {
+        } else {
             result.push(barcodeInfo);
         }
     });
     return result;
 }
 
-function parseCartItems(items, barcodesInfo) {
+function generateBasicCartItems(items, barcodesInfo) {
     var result = [];
     barcodesInfo.forEach(barcodeInfo => {
         var item = findItemByBarcode(items, barcodeInfo.barcode);
@@ -113,26 +113,39 @@ function getNowDateMessage() {
     return year + '年' + month + '月' + date + '日 ' + hour + ':' + minute + ':' + second;
 }
 
-function printMessage(items, freeItems, costInfo, decimalDigits = 2) {
-    var expectText = '***<没钱赚商店>购物清单***\n';
-    expectText += `打印时间：${getNowDateMessage()}\n`;
-    expectText += '----------------------\n';
+function buildHeadMessage() {
+    return `***<没钱赚商店>购物清单***\n打印时间：${getNowDateMessage()}\n`;
+}
 
+function buildCartItemsMessage(items, decimalDigits) {
+    var expectText = '----------------------\n';
     items.forEach(item => expectText += `名称：${item.name}，数量：${item.quantity}${item.unit}，单价：${item.price.toFixed(decimalDigits)}(元)，小计：${item.actualSubTotal.toFixed(decimalDigits)}(元)\n`);
+    return expectText;
+}
 
-    expectText += '----------------------\n';
 
+function buildFreeCartItemMessage(freeItems) {
+    var expectText = '----------------------\n';
     if (freeItems.length > 0) {
         expectText += '挥泪赠送商品：\n';
         freeItems.forEach(item => expectText += `名称：${item.name}，数量：${item.freeQuantity}${item.unit}\n`);
     }
+    return expectText;
+}
 
-    expectText += '----------------------\n';
-
+function buildFooterMessage(costInfo, decimalDigits) {
+    var expectText = '----------------------\n';
     expectText += `总计：${costInfo.totalPriceAfterPromotion.toFixed(decimalDigits)}(元)\n`;
     expectText += `节省：${costInfo.totalSavingCost.toFixed(decimalDigits)}(元)\n`;
-
     expectText += '**********************';
+    return expectText
+}
+
+function printReciptMessage(items, freeItems, costInfo, decimalDigits = 2) {
+    var expectText = buildHeadMessage();
+    expectText += buildCartItemsMessage(items, decimalDigits);
+    expectText += buildFreeCartItemMessage(freeItems);
+    expectText += buildFooterMessage(costInfo, decimalDigits);
     console.log(expectText);
 }
 
@@ -140,13 +153,14 @@ function printInventory(inputs) {
     var repositoy = loadAllItems();
     var promotions = loadPromotions();
 
-    var itemBarcodes = parseBarcodes(inputs, '-');
-    var cartItems = parseCartItems(repositoy, itemBarcodes);
-    cartItems = calculateSubtotal(cartItems);
-    discountItems(cartItems, promotions);
+    var barcodesInfo = parseBarcodesInfo(inputs, '-');
+    var basicartItems = generateBasicCartItems(repositoy, barcodesInfo);
 
-    var costInfo = calculateCostInfo(cartItems);
-    var freeItems = getFreeItems(cartItems);
-    cartItems = calculateActualSubTotal(cartItems);
-    printMessage(cartItems, freeItems, costInfo);
+    var cartItemsWithSubtotal = calculateSubtotal(basicartItems);
+    discountItems(cartItemsWithSubtotal, promotions);
+
+    var costInfo = calculateCostInfo(cartItemsWithSubtotal);
+    var freeItems = getFreeItems(cartItemsWithSubtotal);
+    var cartItemsWithActualSubTotal = calculateActualSubTotal(cartItemsWithSubtotal);
+    printReciptMessage(cartItemsWithActualSubTotal, freeItems, costInfo);
 }
