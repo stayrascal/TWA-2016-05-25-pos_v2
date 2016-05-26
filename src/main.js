@@ -49,6 +49,15 @@ function calculateSubtotal(items) {
 
 var promotionStrategy = {
     'BUY_TWO_GET_ONE_FREE': function (promotion, item) {
+        //var itemCopy = Object.assign(item);
+        //promotion.barcodes.forEach(barcode => {
+        //    if (barcode === itemCopy.barcode) {
+        //        itemCopy.freeQuantity = parseInt(itemCopy.quantity / 3);
+        //        itemCopy.savingCost = itemCopy.freeQuantity * itemCopy.price;
+        //    }
+        //});
+        //return itemCopy;
+
         promotion.barcodes.forEach(barcode => {
             if (barcode === item.barcode) {
                 item.freeQuantity = parseInt(item.quantity / 3);
@@ -59,8 +68,16 @@ var promotionStrategy = {
 };
 
 function applyPromotionsOnCartItems(items, promotions) {
-    promotions.forEach(promotion => {
-        items.forEach(item => {
+    //var result = [];
+    //promotions.forEach(promotion => {
+    //    items.forEach(item => {
+    //        result.push(promotionStrategy[promotion.type](promotion, item));
+    //    });
+    //});
+    //return result;
+
+    items.map(item => {
+        promotions.forEach(promotion => {
             promotionStrategy[promotion.type](promotion, item);
         });
     });
@@ -150,7 +167,9 @@ function printInventory(inputs) {
 
     var itemsWithSubtotal = calculateSubtotal(basicItems);
 
+    //itemsWithSubtotal = applyPromotionsOnCartItems(itemsWithSubtotal, promotions);
     applyPromotionsOnCartItems(itemsWithSubtotal, promotions);
+
 
     var costInfo = calculateCostInfo(itemsWithSubtotal);
     var freeItems = getFreeItems(itemsWithSubtotal);
