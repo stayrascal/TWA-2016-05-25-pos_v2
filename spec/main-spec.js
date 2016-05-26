@@ -96,4 +96,29 @@ describe('pos', function () {
         expect(returnItems.length).toEqual(3);
         expect(returnItems[0]).toEqual(expectFirstItem);
     });
+
+    it('should return item list and the item have subTotal property', function(){
+        var testItems = [{
+            barcode:'ITEM000001',
+            name: '雪碧',
+            unit: '瓶',
+            price: 3,
+            quantity: 5
+        }];
+
+        var expectFirstItem = {
+            barcode:'ITEM000001',
+            name: '雪碧',
+            unit: '瓶',
+            price: 3,
+            quantity: 5,
+            subTotal: 15,
+            savingCost: 0,
+            freeQuantity: 0
+        };
+
+        var returnItems = calculateSubtotal(testItems);
+        expect(returnItems[0]).toEqual(expectFirstItem);
+    });
+
 });
